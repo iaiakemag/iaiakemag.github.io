@@ -44,6 +44,7 @@
             height: 50px;
             background-image: url('images/89nyxJm/36df49637c343a5b6b32bf9b7c8f3bb1.png');
             background-size: cover;
+            z-index: 10; /* Ensure dino is above clouds */
         }
         .obstacle {
             position: absolute;
@@ -59,6 +60,7 @@
             height: 30px;
             background-image: url('images/T1Zy7YP/Untitled81-20241022002502.png');
             background-size: cover;
+            z-index: 5; /* Ensure clouds are below dino */
         }
         .score {
             position: absolute;
@@ -137,6 +139,7 @@
         let clouds = [];
         let obstacleInterval, scoreInterval, gravityInterval;
         let speed = 2; // Initial speed
+        let jumpInterval; // For continuous jumping
 
         // Tips array
         const tips = [
@@ -224,6 +227,10 @@
         }
 
         // Move Obstacle
+        // Move Obstacle
+        let multiplier = 1; // Initial multiplier
+
+        // Move Obstacle
         function moveObstacle(obstacle) {
             let position = 100;
             let moveInterval = setInterval(() => {
@@ -231,6 +238,10 @@
                     clearInterval(moveInterval);
                     gameContainer.removeChild(obstacle);
                     obstacles.shift();
+
+                    // Increase speed and multiplier with decimal precision
+                    speed += 0.1;
+                    multiplier += 0.005; // Increase multiplier by 0.005 when crossing an obstacle
                 } else {
                     position -= speed; // Speed increases over time
                     obstacle.style.left = position + "vw";
@@ -243,6 +254,7 @@
                 }
             }, 20);
         }
+
 
         // Collision Detection
         function checkCollision(obstacle) {
@@ -261,20 +273,25 @@
             document.getElementById("game-over-sound").play();
             clearInterval(obstacleInterval);
             clearInterval(scoreInterval);
+            clearInterval(jumpInterval); // Clear the jump interval
             gameOverScreen.style.display = "flex"; // Show game over screen
 
             // Reset speed on game over
             speed = 2;
 
-            finalScoreDisplay.innerText = score;
+            finalScoreDisplay.innerText = Math.floor(score).toString().padStart(6, '0');
             if (score > highScore) {
                 highScore = score;
-                highScoreDisplay.innerText = "HI " + highScore;
+                highScoreDisplay.innerText = "HI " + Math.floor(highScore).toString().padStart(6, '0');;
                 highScoreDisplay.style.display = "block";
             }
 
             // Remove jump event listener to prevent jumping on game over
             document.removeEventListener("keydown", jump);
+            document.removeEventListener("mousedown", startJump);
+            document.removeEventListener("mouseup", stopJump);
+            document.removeEventListener("touchstart", startJump);
+            document.removeEventListener("touchend", stopJump);
         }
 
         // Restart Game
@@ -295,19 +312,23 @@
 
             startGame(); // Restart game
 
-            
             document.addEventListener("keydown", jump);
+            document.addEventListener("mousedown", startJump);
+            document.addEventListener("mouseup", stopJump);
+            document.addEventListener("touchstart", startJump);
+            document.addEventListener("touchend", stopJump);
         }
 
         // Start Game Loop
+
         function startGame() {
             obstacleInterval = setInterval(createObstacle, 2000); // Create an obstacle every 2 seconds
             scoreInterval = setInterval(() => {
-                score++;
-                scoreDisplay.innerText = score.toString().padStart(6, '0');
+                score += multiplier; // Increment score with multiplier
+                scoreDisplay.innerText = Math.floor(score).toString().padStart(6, '0'); // Display whole numbers only
 
                 // Change color if score equals high score
-                if (score === highScore) {
+                if (Math.floor(score) === highScore) {
                     scoreDisplay.style.color = "#FF6E00";
                     setTimeout(() => {
                         scoreDisplay.style.color = "#535353"; // Revert to normal color after 3 seconds
@@ -324,6 +345,17 @@
 
             // Create clouds every 5 seconds
             setInterval(createCloud, 5000);
+        }
+
+        // Start continuous jump
+        function startJump() {
+            jump(); // Initial jump
+            jumpInterval = setInterval(jump, 200); // Jump every 200 ms while holding
+        }
+
+        // Stop continuous jump
+        function stopJump() {
+            clearInterval(jumpInterval);
         }
 
         // Event Listeners
