@@ -191,25 +191,35 @@
         }
 
         // Jump Function
+        // Jump Function
+        // Jump Function
         function jump() {
             if (isJumping) return;
             isJumping = true;
 
-            // Play the jump sound immediately when jump is triggered
             document.getElementById("jump-sound").currentTime = 0; // Reset sound if it's still playing
             document.getElementById("jump-sound").play();
 
-            let velocity = 25; // Increased initial velocity for a higher jump
+            let velocity = 25; // Jump velocity
             let dinoBottom = parseInt(getComputedStyle(dino).bottom);
+            let rotation = 0; // Initialize rotation
 
             gravityInterval = setInterval(() => {
                 if (velocity > 0 || dinoBottom > 10) {
                     dinoBottom += velocity;
-                    velocity -= 2.5; // Increased gravity pull down slightly for faster descent
+                    velocity -= 2.5; // Adjust gravity
+
                     dino.style.bottom = dinoBottom + "px";
+
+                    // Simulate a rolling motion
+                    rotation += 15; // Increase rotation angle
+                    dino.style.transform = `rotate(${rotation}deg)`;
                 } else {
                     clearInterval(gravityInterval);
                     isJumping = false;
+
+                    // Reset the dino's rotation when it lands
+                    dino.style.transform = "rotate(0deg)";
                 }
             }, 20);
         }
