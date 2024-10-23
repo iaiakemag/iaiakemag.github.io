@@ -332,7 +332,7 @@
         // Start Game Loop
 
         function startGame() {
-            obstacleInterval = setInterval(createObstacle, 2000); // Create an obstacle every 2 seconds
+            obstacleInterval = setInterval(createObstacle, Math.floor(Math.random() * (1500 - 10 + 1)) + 1000);  // Create an obstacle every
             scoreInterval = setInterval(() => {
                 score += multiplier; // Increment score with multiplier
                 scoreDisplay.innerText = Math.floor(score).toString().padStart(6, '0'); // Display whole numbers only
