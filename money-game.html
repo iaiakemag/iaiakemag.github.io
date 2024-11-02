@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Money Printer Game</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-image: url('https://i.ibb.co/kM25q6f/Untitled-11-02-2024-01-31-46.png');
+            background-size: cover;
+            background-color: #f4f4f4;
+            color: white;
+        }
+        .balance {
+            font-size: 2em;
+            margin: 20px;
+            display: flex;
+            align-items: center;
+        }
+        .money-icon {
+            width: 50px;
+            height: 50px;
+            margin-right: 10px;
+        }
+        .button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 1.2em;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+        }
+        .button:hover {
+            background-color: #45a049;
+        }
+        .printer-icon, .dropshipping-icon {
+            width: 30px;
+            height: 30px;
+            margin-left: 10px; /* Space between button text and icon */
+        }
+        .items-container {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        .printer, .dropshipping {
+            display: none;
+            width: 100px;
+            height: 100px;
+            margin-top: 100px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="balance">
+        <img src="https://i.ibb.co/4TzB98W/Untitled110-20241102143531.png" class="money-icon" alt="Money Icon">
+        <span id="money">0</span>
+    </div>
+
+    <button id="buyPrinter" class="button">Buy 3D Printer for $15
+        <img class="printer-icon" src="https://i.ibb.co/j3T5h6z/Untitled-11-02-2024-01-46-02.png" alt="3D Printer Icon">
+    </button>
+
+    <button id="buyDropshipping" class="button">Buy Dropshipping for $30
+        <img class="dropshipping-icon" src="https://i.ibb.co/PQJVgnP/Untitled-11-02-2024-01-44-28.png" alt="Dropshipping Icon">
+    </button>
+
+    <!-- Container for Printer and Dropshipping GIFs, positioned side by side -->
+    <div class="items-container">
+        <img id="printerGif" class="printer" src="https://i.ibb.co/5rfgX9m/Untitled-11-02-2024-01-50-12.gif" alt="3D Printer GIF">
+        <img id="dropshippingGif" class="dropshipping" src="https://i.ibb.co/9Hj2YZQ/Untitled-11-02-2024-04-36-51.gif" alt="Dropshipping GIF">
+    </div>
+
+    <script>
+        // Initialize local storage values
+        if (!localStorage.getItem('money')) {
+            localStorage.setItem('money', 0);
+        }
+        if (!localStorage.getItem('printer')) {
+            localStorage.setItem('printer', false);
+        }
+        if (!localStorage.getItem('dropshipping')) {
+            localStorage.setItem('dropshipping', false);
+        }
+
+        const moneyElement = document.getElementById('money');
+        const buyPrinterButton = document.getElementById('buyPrinter');
+        const buyDropshippingButton = document.getElementById('buyDropshipping');
+        const printerGif = document.getElementById('printerGif');
+        const dropshippingGif = document.getElementById('dropshippingGif');
+
+        // Update the displayed money balance
+        function updateBalance() {
+            let money = parseInt(localStorage.getItem('money'));
+            money += 1;
+            localStorage.setItem('money', money);
+            moneyElement.textContent = formatMoney(money);
+        }
+
+        // Format the money into "k", "M", "B"
+        function formatMoney(amount) {
+            if (amount >= 1e9) {
+                return (amount / 1e9).toFixed(1) + 'B';
+            } else if (amount >= 1e6) {
+                return (amount / 1e6).toFixed(1) + 'M';
+            } else if (amount >= 1e3) {
+                return (amount / 1e3).toFixed(1) + 'k';
+            }
+            return amount;
+        }
+
+        // Function to handle printer purchase
+        function buyPrinter() {
+            let money = parseInt(localStorage.getItem('money'));
+            if (money >= 15) {
+                money -= 15;
+                localStorage.setItem('money', money);
+                localStorage.setItem('printer', true);
+                updateBalance();
+                buyPrinterButton.style.display = 'none';
+                printerGif.style.display = 'block';
+                setInterval(increaseMoneyWithPrinter, 2000);
+            }
+        }
+
+        // Function to increase money with the printer
+        function increaseMoneyWithPrinter() {
+            let money = parseInt(localStorage.getItem('money'));
+            money += 1;
+            localStorage.setItem('money', money);
+            moneyElement.textContent = formatMoney(money);
+        }
+
+        // Function to handle dropshipping purchase
+        function buyDropshipping() {
+            let money = parseInt(localStorage.getItem('money'));
+            if (money >= 30) {
+                money -= 30;
+                localStorage.setItem('money', money);
+                localStorage.setItem('dropshipping', true);
+                updateBalance();
+                buyDropshippingButton.style.display = 'none';
+                dropshippingGif.style.display = 'block';
+                setInterval(increaseMoneyWithDropshipping, 5000);
+            }
+        }
+
+        // Function to increase money with dropshipping
+        function increaseMoneyWithDropshipping() {
+            let money = parseInt(localStorage.getItem('money'));
+            money += 3;
+            localStorage.setItem('money', money);
+            moneyElement.textContent = formatMoney(money);
+        }
+
+        // Event listeners for the buy buttons
+        buyPrinterButton.addEventListener('click', buyPrinter);
+        buyDropshippingButton.addEventListener('click', buyDropshipping);
+
+        // Function to check the initial state and set up the UI
+        function initialize() {
+            const hasPrinter = localStorage.getItem('printer') === 'true';
+            if (hasPrinter) {
+                buyPrinterButton.style.display = 'none';
+                printerGif.style.display = 'block';
+                setInterval(increaseMoneyWithPrinter, 2000);
+            }
+
+            const hasDropshipping = localStorage.getItem('dropshipping') === 'true';
+            if (hasDropshipping) {
+                buyDropshippingButton.style.display = 'none';
+                dropshippingGif.style.display = 'block';
+                setInterval(increaseMoneyWithDropshipping, 5000);
+            }
+
+            moneyElement.textContent = formatMoney(localStorage.getItem('money'));
+        }
+
+        // Update money balance every second and initialize the UI
+        setInterval(updateBalance, 1000);
+        initialize();
+    </script>
+</body>
+</html>
