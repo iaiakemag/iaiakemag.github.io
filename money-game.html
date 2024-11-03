@@ -19,6 +19,7 @@
             background-size: cover;
             background-color: #f4f4f4;
             color: white;
+            overflow: hidden;
         }
         .balance {
             font-size: 2em;
@@ -46,7 +47,7 @@
         .button:hover {
             background-color: #45a049;
         }
-        .printer-icon, .dropshipping-icon {
+        .printer-icon, .dropshipping-icon, .trash-icon {
             width: 30px;
             height: 30px;
             margin-left: 10px;
@@ -59,11 +60,16 @@
             gap: 20px;
             align-items: center;
         }
-        .printer, .dropshipping {
+        .printer, .dropshipping, .trash {
             display: none;
             width: 100px;
             height: 100px;
-            margin-top: 100px;
+        }
+        .trash-image {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -78,14 +84,18 @@
         <img class="printer-icon" src="https://i.ibb.co/j3T5h6z/Untitled-11-02-2024-01-46-02.png" alt="3D Printer Icon">
     </button>
 
-    <!-- Hidden initially until printer is bought -->
     <button id="buyDropshipping" class="button" style="display: none;">Buy Dropshipping for $30
         <img class="dropshipping-icon" src="https://i.ibb.co/PQJVgnP/Untitled-11-02-2024-01-44-28.png" alt="Dropshipping Icon">
+    </button>
+
+    <button id="buyTrash" class="button" style="display: none;">Buy Trash for $50
+        <img class="trash-icon" src="https://i.ibb.co/XzzBXrP/Untitled113-20241103124339.png" alt="Trash Icon">
     </button>
 
     <div class="items-container">
         <img id="printerGif" class="printer" src="https://i.ibb.co/5rfgX9m/Untitled-11-02-2024-01-50-12.gif" alt="3D Printer GIF">
         <img id="dropshippingGif" class="dropshipping" src="https://i.ibb.co/9Hj2YZQ/Untitled-11-02-2024-04-36-51.gif" alt="Dropshipping GIF">
+        <img id="trashCanGif" class="trash" src="https://i.ibb.co/XzzBXrP/Untitled113-20241103124339.png" alt="Trash Can GIF">
     </div>
 
     <script>
@@ -98,12 +108,17 @@
         if (!localStorage.getItem('dropshipping')) {
             localStorage.setItem('dropshipping', false);
         }
+        if (!localStorage.getItem('trash')) {
+            localStorage.setItem('trash', false);
+        }
 
         const moneyElement = document.getElementById('money');
         const buyPrinterButton = document.getElementById('buyPrinter');
         const buyDropshippingButton = document.getElementById('buyDropshipping');
+        const buyTrashButton = document.getElementById('buyTrash');
         const printerGif = document.getElementById('printerGif');
         const dropshippingGif = document.getElementById('dropshippingGif');
+        const trashCanGif = document.getElementById('trashCanGif');
 
         function updateBalance() {
             let money = parseInt(localStorage.getItem('money'));
@@ -127,7 +142,7 @@
                 localStorage.setItem('printer', true);
                 updateBalance();
                 buyPrinterButton.style.display = 'none';
-                buyDropshippingButton.style.display = 'inline-block'; // Show the dropshipping button
+                buyDropshippingButton.style.display = 'inline-block';
                 printerGif.style.display = 'block';
                 setInterval(increaseMoneyWithPrinter, 2000);
             }
@@ -148,6 +163,7 @@
                 localStorage.setItem('dropshipping', true);
                 updateBalance();
                 buyDropshippingButton.style.display = 'none';
+                buyTrashButton.style.display = 'inline-block';
                 dropshippingGif.style.display = 'block';
                 setInterval(increaseMoneyWithDropshipping, 5000);
             }
@@ -160,8 +176,79 @@
             moneyElement.textContent = formatMoney(money);
         }
 
+        function buyTrash() {
+            let money = parseInt(localStorage.getItem('money'));
+            if (money >= 50) {
+                money -= 50;
+                localStorage.setItem('money', money);
+                localStorage.setItem('trash', true);
+                updateBalance();
+                buyTrashButton.style.display = 'none';
+                trashCanGif.style.display = 'block';
+                startGeneratingTrash();
+            }
+        }
+
+        function startGeneratingTrash() {
+            setInterval(() => {
+                const trashImage = document.createElement('img');
+                trashImage.src = "https://i.ibb.co/XJ3dbVh/Untitled-11-02-2024-07-28-17.png";
+                trashImage.className = 'trash-image';
+                trashImage.style.top = `${Math.random() * 80 + 10}%`;
+                trashImage.style.left = `${Math.random() * 80 + 10}%`;
+
+                // Enable dragging with mouse/touch
+                let offsetX, offsetY;
+
+                function moveTrash(e) {
+                    const x = e.touches ? e.touches[0].clientX : e.clientX;
+                    const y = e.touches ? e.touches[0].clientY : e.clientY;
+                    trashImage.style.left = `${x - offsetX}px`;
+                    trashImage.style.top = `${y - offsetY}px`;
+
+                    // Check for collision with trash can
+                    const trashRect = trashImage.getBoundingClientRect();
+                    const trashCanRect = trashCanGif.getBoundingClientRect();
+                    if (
+                        trashRect.left < trashCanRect.right &&
+                        trashRect.right > trashCanRect.left &&
+                        trashRect.top < trashCanRect.bottom &&
+                        trashRect.bottom > trashCanRect.top
+                    ) {
+                        trashImage.remove();
+                        let money = parseInt(localStorage.getItem('money')) + 5;
+                        localStorage.setItem('money', money);
+                        moneyElement.textContent = formatMoney(money);
+                    }
+                }
+
+                trashImage.addEventListener('mousedown', (e) => {
+                    offsetX = e.clientX - trashImage.getBoundingClientRect().left;
+                    offsetY = e.clientY - trashImage.getBoundingClientRect().top;
+                    document.addEventListener('mousemove', moveTrash);
+                });
+
+                trashImage.addEventListener('touchstart', (e) => {
+                    offsetX = e.touches[0].clientX - trashImage.getBoundingClientRect().left;
+                    offsetY = e.touches[0].clientY - trashImage.getBoundingClientRect().top;
+                    document.addEventListener('touchmove', moveTrash);
+                });
+
+                // Remove listeners when dragging ends
+                trashImage.addEventListener('mouseup', () => {
+                    document.removeEventListener('mousemove', moveTrash);
+                });
+                trashImage.addEventListener('touchend', () => {
+                    document.removeEventListener('touchmove', moveTrash);
+                });
+
+                document.body.appendChild(trashImage);
+            }, 10000);
+        }
+
         buyPrinterButton.addEventListener('click', buyPrinter);
         buyDropshippingButton.addEventListener('click', buyDropshipping);
+        buyTrashButton.addEventListener('click', buyTrash);
 
         function initialize() {
             const hasPrinter = localStorage.getItem('printer') === 'true';
@@ -175,8 +262,16 @@
             const hasDropshipping = localStorage.getItem('dropshipping') === 'true';
             if (hasDropshipping) {
                 buyDropshippingButton.style.display = 'none';
+                buyTrashButton.style.display = 'inline-block';
                 dropshippingGif.style.display = 'block';
                 setInterval(increaseMoneyWithDropshipping, 5000);
+            }
+
+            const hasTrash = localStorage.getItem('trash') === 'true';
+            if (hasTrash) {
+                buyTrashButton.style.display = 'none';
+                trashCanGif.style.display = 'block';
+                startGeneratingTrash();
             }
 
             moneyElement.textContent = formatMoney(localStorage.getItem('money'));
